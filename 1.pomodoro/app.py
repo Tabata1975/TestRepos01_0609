@@ -32,8 +32,13 @@ def index():
 
 @app.route("/api/session", methods=["POST"])
 def add_session():
-    data = request.get_json(force=True)
-    duration = int(data.get("duration", 25))
+    data = request.get_json(silent=True) or {}
+    try:
+        duration = int(data.get("duration", 25))
+    except (TypeError, ValueError):
+        return jsonify({"error": "duration は分単位の整数で指定してください"}), 400
+    if duration <= 0:
+        return jsonify({"error": "duration は 1 以上で指定してください"}), 400
     today = date.today().isoformat()
 
     with get_db() as conn:
