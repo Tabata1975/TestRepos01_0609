@@ -91,6 +91,60 @@ body.focus-mode .focus-background {
   }
 }
 
+body.theme-dark {
+  background: linear-gradient(135deg, #181a20 0%, #2a3042 100%);
+}
+
+body.theme-dark .title-bar {
+  background: #2a3042;
+  border-bottom-color: #3a4258;
+}
+
+body.theme-dark .title-text,
+body.theme-dark .win-btn,
+body.theme-dark .phase-label,
+body.theme-dark .timer-display,
+body.theme-dark .stat-value,
+body.theme-dark .panel-title {
+  color: #f1f3f8;
+}
+
+body.theme-dark .card,
+body.theme-dark .settings-panel,
+body.theme-dark .progress-panel {
+  background: #202633;
+}
+
+body.theme-dark .ring-bg {
+  stroke: #3d465b;
+}
+
+body.theme-dark .btn-outline {
+  color: #cfd6e6;
+  border-color: #56617b;
+}
+
+body.theme-dark .stat-label {
+  color: #b6bfd5;
+}
+
+body.theme-focus {
+  background: #f2f4f8;
+}
+
+body.theme-focus .window-wrapper {
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.14);
+}
+
+body.theme-focus .title-bar,
+body.theme-focus .progress-panel {
+  display: none;
+}
+
+body.theme-focus .card {
+  gap: 16px;
+}
+
 /* ===== ウィンドウ風ラッパー ===== */
 .window-wrapper {
   width: 340px;
@@ -230,6 +284,57 @@ body.focus-mode .focus-background {
   border-color: #999;
 }
 
+.settings-panel {
+  width: 100%;
+  background: #f7f7f9;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row label,
+.setting-row span {
+  font-size: 12px;
+  color: #666;
+}
+
+.setting-row select {
+  border: 1px solid #d4d8e2;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.sound-row {
+  align-items: flex-start;
+}
+
+.sound-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sound-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 /* ===== 進捗パネル ===== */
 .progress-panel {
   width: 100%;
@@ -270,4 +375,75 @@ body.focus-mode .focus-background {
 .stat-label {
   font-size: 11px;
   color: #999;
+}
+
+.gamification-panel,
+.stats-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xp-line,
+.streak-line,
+.subtle-text {
+  font-size: 12px;
+  color: #666;
+}
+
+.xp-bar {
+  width: 100%;
+  height: 8px;
+  background: #ececf2;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #7c6fcf 0%, #9b8de0 100%);
+  transition: width 0.4s ease;
+}
+
+.xp-level-up {
+  color: #7c6fcf;
+  font-weight: 700;
+}
+
+.badge-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #ececf2;
+  color: #666;
+}
+
+.badge.unlocked {
+  background: #7c6fcf;
+  color: #fff;
+}
+
+.mini-graph {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  align-items: end;
+}
+
+.monthly-graph {
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+}
+
+.graph-bar {
+  height: 8px;
+  min-height: 8px;
+  border-radius: 6px;
+  background: #d9d9e7;
 }

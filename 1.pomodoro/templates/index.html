@@ -59,6 +59,42 @@
         <button class="btn btn-outline" onclick="resetTimer()">リセット</button>
       </div>
 
+      <div class="settings-panel">
+        <div class="setting-row">
+          <label for="work-duration">作業時間</label>
+          <select id="work-duration">
+            <option value="15">15分</option>
+            <option value="25" selected>25分</option>
+            <option value="35">35分</option>
+            <option value="45">45分</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="break-duration">休憩時間</label>
+          <select id="break-duration">
+            <option value="5" selected>5分</option>
+            <option value="10">10分</option>
+            <option value="15">15分</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="theme-select">テーマ</label>
+          <select id="theme-select">
+            <option value="light" selected>ライト</option>
+            <option value="dark">ダーク</option>
+            <option value="focus">フォーカス</option>
+          </select>
+        </div>
+        <div class="setting-row sound-row">
+          <span>サウンド</span>
+          <div class="sound-options">
+            <label><input id="sound-start" type="checkbox" checked />開始</label>
+            <label><input id="sound-end" type="checkbox" checked />終了</label>
+            <label><input id="sound-tick" type="checkbox" />tick</label>
+          </div>
+        </div>
+      </div>
+
       <!-- 今日の進捗パネル -->
       <div class="progress-panel">
         <p class="panel-title">今日の進捗</p>
@@ -72,6 +108,37 @@
             <span class="stat-label">集中時間</span>
           </div>
         </div>
+      </div>
+
+      <div class="progress-panel gamification-panel">
+        <p class="panel-title">ゲーミフィケーション</p>
+        <p class="xp-line">
+          Lv.<span id="xp-level">1</span> / 合計XP <span id="xp-total">0</span>
+        </p>
+        <div class="xp-bar">
+          <div id="xp-progress-bar" class="xp-bar-fill"></div>
+        </div>
+        <p id="xp-progress-label" class="subtle-text">次のレベルまで 500XP</p>
+        <p class="streak-line">🔥 <span id="streak-days">0</span>日連続</p>
+        <div id="badges-list" class="badge-list"></div>
+      </div>
+
+      <div class="progress-panel stats-panel">
+        <p class="panel-title">週間統計</p>
+        <p class="subtle-text">
+          完了率: <span id="weekly-completion-rate">0</span>% /
+          平均集中時間: <span id="weekly-avg-focus">0</span>分
+        </p>
+        <div id="weekly-graph" class="mini-graph"></div>
+      </div>
+
+      <div class="progress-panel stats-panel">
+        <p class="panel-title">月間統計</p>
+        <p class="subtle-text">
+          完了率: <span id="monthly-completion-rate">0</span>% /
+          平均集中時間: <span id="monthly-avg-focus">0</span>分
+        </p>
+        <div id="monthly-graph" class="mini-graph monthly-graph"></div>
       </div>
     </div>
   </div>

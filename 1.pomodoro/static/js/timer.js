@@ -1,20 +1,40 @@
-// ===== フェーズ定義 =====
-const PHASES = [
-  { name: "作業中", duration: 25 * 60, isBreak: false },
-  { name: "休憩中", duration: 5 * 60, isBreak: true },
-  { name: "作業中", duration: 25 * 60, isBreak: false },
-  { name: "休憩中", duration: 5 * 60, isBreak: true },
-  { name: "作業中", duration: 25 * 60, isBreak: false },
-  { name: "休憩中", duration: 5 * 60, isBreak: true },
-  { name: "作業中", duration: 25 * 60, isBreak: false },
-  { name: "長い休憩中", duration: 15 * 60, isBreak: true },
-];
+// ===== 設定 =====
+const settings = {
+  workDuration: 25,
+  breakDuration: 5,
+  theme: "light",
+  sounds: {
+    start: true,
+    end: true,
+    tick: false,
+  },
+};
+
+const SOUND_VOLUME = {
+  default: 0.03,
+  tick: 0.012,
+};
+
+function buildPhases(workMin, breakMin) {
+  return [
+    { name: "作業中", duration: workMin * 60, isBreak: false },
+    { name: "休憩中", duration: breakMin * 60, isBreak: true },
+    { name: "作業中", duration: workMin * 60, isBreak: false },
+    { name: "休憩中", duration: breakMin * 60, isBreak: true },
+    { name: "作業中", duration: workMin * 60, isBreak: false },
+    { name: "休憩中", duration: breakMin * 60, isBreak: true },
+    { name: "作業中", duration: workMin * 60, isBreak: false },
+    { name: "長い休憩中", duration: breakMin * 60, isBreak: true },
+  ];
+}
 
 // ===== 状態 =====
+let phases = buildPhases(settings.workDuration, settings.breakDuration);
 let phaseIndex = 0;
-let remaining = PHASES[0].duration;
+let remaining = phases[0].duration;
 let intervalId = null;
 let isRunning = false;
+let audioContext = null;
 
 // ===== SVG 定数 =====
 const RADIUS = 52;
@@ -29,6 +49,25 @@ const ringGradientStart = document.getElementById("ring-gradient-start");
 const ringGradientEnd = document.getElementById("ring-gradient-end");
 const completedCount = document.getElementById("completed-count");
 const totalTimeEl = document.getElementById("total-time");
+const workDurationSelect = document.getElementById("work-duration");
+const breakDurationSelect = document.getElementById("break-duration");
+const themeSelect = document.getElementById("theme-select");
+const startSoundCheckbox = document.getElementById("sound-start");
+const endSoundCheckbox = document.getElementById("sound-end");
+const tickSoundCheckbox = document.getElementById("sound-tick");
+const xpLevelEl = document.getElementById("xp-level");
+const xpTotalEl = document.getElementById("xp-total");
+const xpProgressLabelEl = document.getElementById("xp-progress-label");
+const xpProgressBarEl = document.getElementById("xp-progress-bar");
+const streakDaysEl = document.getElementById("streak-days");
+const badgesListEl = document.getElementById("badges-list");
+const weeklyCompletionRateEl = document.getElementById("weekly-completion-rate");
+const weeklyAvgFocusEl = document.getElementById("weekly-avg-focus");
+const monthlyCompletionRateEl = document.getElementById("monthly-completion-rate");
+const monthlyAvgFocusEl = document.getElementById("monthly-avg-focus");
+const weeklyGraphEl = document.getElementById("weekly-graph");
+const monthlyGraphEl = document.getElementById("monthly-graph");
+let previousLevel = 1;
 
 const FOCUS_COLOR_BLUE = { r: 47, g: 128, b: 237 };
 const FOCUS_COLOR_BLUE_LIGHT = { r: 86, g: 204, b: 242 };
@@ -39,6 +78,15 @@ const FOCUS_COLOR_RED = { r: 235, g: 87, b: 87 };
 const GRADIENT_TRANSITION_MIDPOINT = 0.5;
 // 半分のレンジ（0.5）を 0-1 に拡大するための係数（1 / 0.5 = 2）
 const GRADIENT_TRANSITION_MULTIPLIER = 2;
+
+// ===== 初期化 =====
+ringProgress.style.strokeDasharray = CIRCUMFERENCE;
+ringProgress.style.strokeDashoffset = 0;
+bindSettingsControls();
+applyTheme(settings.theme);
+loadTodayProgress();
+loadGamification();
+requestNotificationPermission();
 
 // ===== 色補間 =====
 function clamp(value, min, max) {
@@ -95,7 +143,7 @@ function setDashOffset(percent) {
 
 // ===== エフェクト状態更新 =====
 function updateFocusEffectState() {
-  const isFocusPhase = !PHASES[phaseIndex].isBreak;
+  const isFocusPhase = !phases[phaseIndex].isBreak;
   document.body.classList.toggle("focus-mode", isRunning && isFocusPhase);
 }
 
@@ -105,26 +153,27 @@ function updateDisplay() {
   const s = String(remaining % 60).padStart(2, "0");
   timerDisplay.textContent = `${m}:${s}`;
 
-  const total = PHASES[phaseIndex].duration;
+  const total = phases[phaseIndex].duration;
   const ratio = clamp(remaining / total, 0, 1);
   setDashOffset(ratio * 100);
-  setRingGradient(ratio, PHASES[phaseIndex].isBreak);
+  setRingGradient(ratio, phases[phaseIndex].isBreak);
 }
 
 // ===== フェーズ切替 =====
 function switchPhase() {
-  if (!PHASES[phaseIndex].isBreak) {
-    const durationMin = PHASES[phaseIndex].duration / 60;
+  if (!phases[phaseIndex].isBreak) {
+    const durationMin = phases[phaseIndex].duration / 60;
     recordSession(durationMin);
   }
 
-  phaseIndex = (phaseIndex + 1) % PHASES.length;
-  remaining = PHASES[phaseIndex].duration;
-  phaseLabel.textContent = PHASES[phaseIndex].name;
+  phaseIndex = (phaseIndex + 1) % phases.length;
+  remaining = phases[phaseIndex].duration;
+  const phase = phases[phaseIndex];
 
+  phaseLabel.textContent = phase.name;
   updateDisplay();
   updateFocusEffectState();
-  sendNotification(`${PHASES[phaseIndex].name}の時間です！`);
+  sendNotification(`${phase.name}の時間です！`);
 }
 
 // ===== タイマー開始・一時停止トグル =====
@@ -138,13 +187,16 @@ function toggleTimer() {
 
 function startTimer() {
   if (isRunning) return;
-
   isRunning = true;
   startBtn.textContent = "一時停止";
+  playSound("start");
   updateFocusEffectState();
 
   intervalId = setInterval(() => {
     remaining -= 1;
+    if (remaining > 0) {
+      playSound("tick");
+    }
     updateDisplay();
 
     if (remaining <= 0) {
@@ -152,6 +204,7 @@ function startTimer() {
       intervalId = null;
       isRunning = false;
       startBtn.textContent = "開始";
+      playSound("end");
       switchPhase();
     }
   }, 1000);
@@ -159,7 +212,6 @@ function startTimer() {
 
 function pauseTimer() {
   if (!isRunning) return;
-
   isRunning = false;
   clearInterval(intervalId);
   intervalId = null;
@@ -170,9 +222,75 @@ function pauseTimer() {
 // ===== リセット =====
 function resetTimer() {
   pauseTimer();
-  remaining = PHASES[phaseIndex].duration;
+  remaining = phases[phaseIndex].duration;
   startBtn.textContent = "開始";
   updateDisplay();
+}
+
+function applyTimerSettings() {
+  pauseTimer();
+  phases = buildPhases(settings.workDuration, settings.breakDuration);
+  phaseIndex = 0;
+  remaining = phases[0].duration;
+  phaseLabel.textContent = phases[0].name;
+  startBtn.textContent = "開始";
+  updateDisplay();
+  updateFocusEffectState();
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove("theme-light", "theme-dark", "theme-focus");
+  document.body.classList.add(`theme-${theme}`);
+}
+
+function bindSettingsControls() {
+  workDurationSelect.addEventListener("change", (event) => {
+    settings.workDuration = Number(event.target.value);
+    applyTimerSettings();
+  });
+
+  breakDurationSelect.addEventListener("change", (event) => {
+    settings.breakDuration = Number(event.target.value);
+    applyTimerSettings();
+  });
+
+  themeSelect.addEventListener("change", (event) => {
+    settings.theme = event.target.value;
+    applyTheme(settings.theme);
+  });
+
+  startSoundCheckbox.addEventListener("change", (event) => {
+    settings.sounds.start = event.target.checked;
+  });
+
+  endSoundCheckbox.addEventListener("change", (event) => {
+    settings.sounds.end = event.target.checked;
+  });
+
+  tickSoundCheckbox.addEventListener("change", (event) => {
+    settings.sounds.tick = event.target.checked;
+  });
+}
+
+function playSound(type) {
+  if (!settings.sounds[type] || !window.AudioContext) return;
+  if (!audioContext) {
+    audioContext = new AudioContext();
+  }
+
+  const frequencies = { start: 660, end: 440, tick: 880 };
+  const durations = { start: 0.08, end: 0.14, tick: 0.03 };
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  oscillator.type = "sine";
+  oscillator.frequency.value = frequencies[type];
+  gainNode.gain.value = type === "tick" ? SOUND_VOLUME.tick : SOUND_VOLUME.default;
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.start();
+  oscillator.stop(audioContext.currentTime + durations[type]);
 }
 
 // ===== セッション記録 =====
@@ -189,6 +307,7 @@ function recordSession(durationMin) {
     .then((data) => {
       completedCount.textContent = data.completed;
       totalTimeEl.textContent = formatMinutes(data.total_minutes);
+      loadGamification(true);
     })
     .catch((err) => console.error(err));
 }
@@ -202,6 +321,66 @@ function loadTodayProgress() {
       totalTimeEl.textContent = formatMinutes(data.total_minutes);
     })
     .catch(() => {});
+}
+
+// ===== ゲーミフィケーション情報取得 =====
+function loadGamification(checkLevelUp = false) {
+  fetch("/api/gamification")
+    .then((res) => {
+      if (!res.ok) throw new Error(`GET /api/gamification failed: ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      updateXp(data.xp, checkLevelUp);
+      streakDaysEl.textContent = data.streak_days;
+      renderBadges(data.badges);
+      renderStats(data.weekly_stats, weeklyCompletionRateEl, weeklyAvgFocusEl);
+      renderStats(data.monthly_stats, monthlyCompletionRateEl, monthlyAvgFocusEl);
+      renderGraph(data.weekly_stats.graph.slice(-7), weeklyGraphEl);
+      renderGraph(data.monthly_stats.graph, monthlyGraphEl);
+    })
+    .catch((err) => console.error(err));
+}
+
+function updateXp(xp, checkLevelUp) {
+  xpLevelEl.textContent = xp.level;
+  xpTotalEl.textContent = xp.total;
+  xpProgressLabelEl.textContent = `次のレベルまで ${xp.xp_for_next_level}XP`;
+  const progress = xp.per_level > 0 ? (xp.xp_in_level / xp.per_level) * 100 : 0;
+  xpProgressBarEl.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+
+  if (checkLevelUp && xp.level > previousLevel) {
+    xpLevelEl.classList.add("xp-level-up");
+    setTimeout(() => xpLevelEl.classList.remove("xp-level-up"), 1200);
+  }
+  previousLevel = xp.level;
+}
+
+function renderBadges(badges) {
+  badgesListEl.innerHTML = "";
+  badges.forEach((badge) => {
+    const chip = document.createElement("span");
+    chip.className = badge.unlocked ? "badge unlocked" : "badge";
+    chip.textContent = `${badge.name} (${badge.progress}/${badge.target})`;
+    badgesListEl.appendChild(chip);
+  });
+}
+
+function renderStats(stats, completionRateEl, avgFocusEl) {
+  completionRateEl.textContent = stats.completion_rate;
+  avgFocusEl.textContent = stats.average_focus_minutes;
+}
+
+function renderGraph(graph, targetEl) {
+  const maxMinutes = Math.max(...graph.map((point) => point.minutes), 1);
+  targetEl.innerHTML = "";
+  graph.forEach((point) => {
+    const bar = document.createElement("div");
+    bar.className = "graph-bar";
+    bar.style.height = `${Math.max(8, (point.minutes / maxMinutes) * 44)}px`;
+    bar.title = `${point.label} ${point.minutes}分`;
+    targetEl.appendChild(bar);
+  });
 }
 
 // ===== 時間フォーマット =====
@@ -225,10 +404,6 @@ function sendNotification(message) {
   }
 }
 
-// ===== 初期化 =====
-phaseLabel.textContent = PHASES[phaseIndex].name;
-ringProgress.style.strokeDasharray = CIRCUMFERENCE;
-ringProgress.style.strokeDashoffset = 0;
-loadTodayProgress();
-requestNotificationPermission();
+// 初期表示
+phaseLabel.textContent = phases[phaseIndex].name;
 updateDisplay();
