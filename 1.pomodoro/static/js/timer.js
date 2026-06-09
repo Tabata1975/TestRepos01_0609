@@ -45,6 +45,8 @@ const timerDisplay = document.getElementById("timer-display");
 const phaseLabel = document.getElementById("phase-label");
 const startBtn = document.getElementById("start-btn");
 const ringProgress = document.getElementById("ring-progress");
+const ringGradientStart = document.getElementById("ring-gradient-start");
+const ringGradientEnd = document.getElementById("ring-gradient-end");
 const completedCount = document.getElementById("completed-count");
 const totalTimeEl = document.getElementById("total-time");
 const workDurationSelect = document.getElementById("work-duration");
@@ -67,6 +69,16 @@ const weeklyGraphEl = document.getElementById("weekly-graph");
 const monthlyGraphEl = document.getElementById("monthly-graph");
 let previousLevel = 1;
 
+const FOCUS_COLOR_BLUE = { r: 47, g: 128, b: 237 };
+const FOCUS_COLOR_BLUE_LIGHT = { r: 86, g: 204, b: 242 };
+const FOCUS_COLOR_YELLOW = { r: 242, g: 201, b: 76 };
+const FOCUS_COLOR_ORANGE = { r: 242, g: 153, b: 74 };
+const FOCUS_COLOR_RED = { r: 235, g: 87, b: 87 };
+// 進行率 0.0-0.5 を 青→黄、0.5-1.0 を 黄→赤 に分割する
+const GRADIENT_TRANSITION_MIDPOINT = 0.5;
+// 半分のレンジ（0.5）を 0-1 に拡大するための係数（1 / 0.5 = 2）
+const GRADIENT_TRANSITION_MULTIPLIER = 2;
+
 // ===== 初期化 =====
 ringProgress.style.strokeDasharray = CIRCUMFERENCE;
 ringProgress.style.strokeDashoffset = 0;
@@ -76,10 +88,63 @@ loadTodayProgress();
 loadGamification();
 requestNotificationPermission();
 
+// ===== 色補間 =====
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function interpolateColor(from, to, ratio) {
+  const t = clamp(ratio, 0, 1);
+  return {
+    r: Math.round(from.r + (to.r - from.r) * t),
+    g: Math.round(from.g + (to.g - from.g) * t),
+    b: Math.round(from.b + (to.b - from.b) * t),
+  };
+}
+
+function toRgb(color) {
+  return `rgb(${color.r}, ${color.g}, ${color.b})`;
+}
+
+function getFocusGradientColors(elapsedRatio) {
+  if (elapsedRatio <= GRADIENT_TRANSITION_MIDPOINT) {
+    const t = elapsedRatio * GRADIENT_TRANSITION_MULTIPLIER;
+    return {
+      start: interpolateColor(FOCUS_COLOR_BLUE, FOCUS_COLOR_YELLOW, t),
+      end: interpolateColor(FOCUS_COLOR_BLUE_LIGHT, FOCUS_COLOR_YELLOW, t),
+    };
+  }
+
+  const t = (elapsedRatio - GRADIENT_TRANSITION_MIDPOINT) * GRADIENT_TRANSITION_MULTIPLIER;
+  return {
+    start: interpolateColor(FOCUS_COLOR_YELLOW, FOCUS_COLOR_RED, t),
+    end: interpolateColor(FOCUS_COLOR_ORANGE, FOCUS_COLOR_RED, t),
+  };
+}
+
+function setRingGradient(remainingRatio, isBreakPhase) {
+  if (isBreakPhase) {
+    ringGradientStart.setAttribute("stop-color", "#56ab2f");
+    ringGradientEnd.setAttribute("stop-color", "#a8e063");
+    return;
+  }
+
+  const elapsedRatio = 1 - clamp(remainingRatio, 0, 1);
+  const colors = getFocusGradientColors(elapsedRatio);
+  ringGradientStart.setAttribute("stop-color", toRgb(colors.start));
+  ringGradientEnd.setAttribute("stop-color", toRgb(colors.end));
+}
+
 // ===== SVG プログレスバー更新 =====
 function setDashOffset(percent) {
   const offset = CIRCUMFERENCE * (1 - percent / 100);
   ringProgress.style.strokeDashoffset = offset;
+}
+
+// ===== エフェクト状態更新 =====
+function updateFocusEffectState() {
+  const isFocusPhase = !phases[phaseIndex].isBreak;
+  document.body.classList.toggle("focus-mode", isRunning && isFocusPhase);
 }
 
 // ===== タイマー表示更新 =====
@@ -89,8 +154,9 @@ function updateDisplay() {
   timerDisplay.textContent = `${m}:${s}`;
 
   const total = phases[phaseIndex].duration;
-  const percent = (remaining / total) * 100;
-  setDashOffset(percent);
+  const ratio = clamp(remaining / total, 0, 1);
+  setDashOffset(ratio * 100);
+  setRingGradient(ratio, phases[phaseIndex].isBreak);
 }
 
 // ===== フェーズ切替 =====
@@ -105,8 +171,8 @@ function switchPhase() {
   const phase = phases[phaseIndex];
 
   phaseLabel.textContent = phase.name;
-  ringProgress.classList.toggle("break", phase.isBreak);
   updateDisplay();
+  updateFocusEffectState();
   sendNotification(`${phase.name}の時間です！`);
 }
 
@@ -124,6 +190,7 @@ function startTimer() {
   isRunning = true;
   startBtn.textContent = "一時停止";
   playSound("start");
+  updateFocusEffectState();
 
   intervalId = setInterval(() => {
     remaining -= 1;
@@ -149,6 +216,7 @@ function pauseTimer() {
   clearInterval(intervalId);
   intervalId = null;
   startBtn.textContent = "再開";
+  updateFocusEffectState();
 }
 
 // ===== リセット =====
@@ -165,9 +233,9 @@ function applyTimerSettings() {
   phaseIndex = 0;
   remaining = phases[0].duration;
   phaseLabel.textContent = phases[0].name;
-  ringProgress.classList.remove("break");
   startBtn.textContent = "開始";
   updateDisplay();
+  updateFocusEffectState();
 }
 
 function applyTheme(theme) {
@@ -337,4 +405,5 @@ function sendNotification(message) {
 }
 
 // 初期表示
+phaseLabel.textContent = phases[phaseIndex].name;
 updateDisplay();

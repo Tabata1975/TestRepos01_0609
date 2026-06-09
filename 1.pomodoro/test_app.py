@@ -72,6 +72,16 @@ def test_multiple_sessions_are_counted_correctly(client):
     assert progress.get_json() == {"completed": 2, "total_minutes": 60}
 
 
+def test_index_contains_visual_feedback_elements(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    html = response.data.decode("utf-8")
+    assert 'class="focus-background"' in html
+    assert 'id="ring-gradient-start"' in html
+    assert 'id="ring-gradient-end"' in html
+
+
 def test_gamification_is_zero_initially(client):
     response = client.get("/api/gamification")
 
