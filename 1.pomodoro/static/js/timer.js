@@ -53,6 +53,19 @@ const themeSelect = document.getElementById("theme-select");
 const startSoundCheckbox = document.getElementById("sound-start");
 const endSoundCheckbox = document.getElementById("sound-end");
 const tickSoundCheckbox = document.getElementById("sound-tick");
+const xpLevelEl = document.getElementById("xp-level");
+const xpTotalEl = document.getElementById("xp-total");
+const xpProgressLabelEl = document.getElementById("xp-progress-label");
+const xpProgressBarEl = document.getElementById("xp-progress-bar");
+const streakDaysEl = document.getElementById("streak-days");
+const badgesListEl = document.getElementById("badges-list");
+const weeklyCompletionRateEl = document.getElementById("weekly-completion-rate");
+const weeklyAvgFocusEl = document.getElementById("weekly-avg-focus");
+const monthlyCompletionRateEl = document.getElementById("monthly-completion-rate");
+const monthlyAvgFocusEl = document.getElementById("monthly-avg-focus");
+const weeklyGraphEl = document.getElementById("weekly-graph");
+const monthlyGraphEl = document.getElementById("monthly-graph");
+let previousLevel = 1;
 
 // ===== 初期化 =====
 ringProgress.style.strokeDasharray = CIRCUMFERENCE;
@@ -60,6 +73,7 @@ ringProgress.style.strokeDashoffset = 0;
 bindSettingsControls();
 applyTheme(settings.theme);
 loadTodayProgress();
+loadGamification();
 requestNotificationPermission();
 
 // ===== SVG プログレスバー更新 =====
@@ -225,6 +239,7 @@ function recordSession(durationMin) {
     .then((data) => {
       completedCount.textContent = data.completed;
       totalTimeEl.textContent = formatMinutes(data.total_minutes);
+      loadGamification(true);
     })
     .catch((err) => console.error(err));
 }
@@ -238,6 +253,66 @@ function loadTodayProgress() {
       totalTimeEl.textContent = formatMinutes(data.total_minutes);
     })
     .catch(() => {});
+}
+
+// ===== ゲーミフィケーション情報取得 =====
+function loadGamification(checkLevelUp = false) {
+  fetch("/api/gamification")
+    .then((res) => {
+      if (!res.ok) throw new Error(`GET /api/gamification failed: ${res.status}`);
+      return res.json();
+    })
+    .then((data) => {
+      updateXp(data.xp, checkLevelUp);
+      streakDaysEl.textContent = data.streak_days;
+      renderBadges(data.badges);
+      renderStats(data.weekly_stats, weeklyCompletionRateEl, weeklyAvgFocusEl);
+      renderStats(data.monthly_stats, monthlyCompletionRateEl, monthlyAvgFocusEl);
+      renderGraph(data.weekly_stats.graph.slice(-7), weeklyGraphEl);
+      renderGraph(data.monthly_stats.graph, monthlyGraphEl);
+    })
+    .catch((err) => console.error(err));
+}
+
+function updateXp(xp, checkLevelUp) {
+  xpLevelEl.textContent = xp.level;
+  xpTotalEl.textContent = xp.total;
+  xpProgressLabelEl.textContent = `次のレベルまで ${xp.xp_for_next_level}XP`;
+  const progress = xp.per_level > 0 ? (xp.xp_in_level / xp.per_level) * 100 : 0;
+  xpProgressBarEl.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+
+  if (checkLevelUp && xp.level > previousLevel) {
+    xpLevelEl.classList.add("xp-level-up");
+    setTimeout(() => xpLevelEl.classList.remove("xp-level-up"), 1200);
+  }
+  previousLevel = xp.level;
+}
+
+function renderBadges(badges) {
+  badgesListEl.innerHTML = "";
+  badges.forEach((badge) => {
+    const chip = document.createElement("span");
+    chip.className = badge.unlocked ? "badge unlocked" : "badge";
+    chip.textContent = `${badge.name} (${badge.progress}/${badge.target})`;
+    badgesListEl.appendChild(chip);
+  });
+}
+
+function renderStats(stats, completionRateEl, avgFocusEl) {
+  completionRateEl.textContent = stats.completion_rate;
+  avgFocusEl.textContent = stats.average_focus_minutes;
+}
+
+function renderGraph(graph, targetEl) {
+  const maxMinutes = Math.max(...graph.map((point) => point.minutes), 1);
+  targetEl.innerHTML = "";
+  graph.forEach((point) => {
+    const bar = document.createElement("div");
+    bar.className = "graph-bar";
+    bar.style.height = `${Math.max(8, (point.minutes / maxMinutes) * 44)}px`;
+    bar.title = `${point.label} ${point.minutes}分`;
+    targetEl.appendChild(bar);
+  });
 }
 
 // ===== 時間フォーマット =====
