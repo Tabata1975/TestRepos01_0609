@@ -108,8 +108,9 @@ sequenceDiagram
   タイマー完了時のブラウザ通知に使用します（ユーザーの許可が必要）。
 
 - **依存ライブラリ**  
-  Flask のみで完結するため、`requirements.txt` は最小限に抑えます。
+  アプリ実行は Flask のみですが、テスト実行のために `pytest` も依存に含めます。
 
   ```
   flask
+  pytest
   ```
