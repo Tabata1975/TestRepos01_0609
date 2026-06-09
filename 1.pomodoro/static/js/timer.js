@@ -10,6 +10,11 @@ const settings = {
   },
 };
 
+const SOUND_VOLUME = {
+  default: 0.03,
+  tick: 0.012,
+};
+
 function buildPhases(workMin, breakMin) {
   return [
     { name: "作業中", duration: workMin * 60, isBreak: false },
@@ -197,7 +202,7 @@ function playSound(type) {
   const gainNode = audioContext.createGain();
   oscillator.type = "sine";
   oscillator.frequency.value = frequencies[type];
-  gainNode.gain.value = type === "tick" ? 0.012 : 0.03;
+  gainNode.gain.value = type === "tick" ? SOUND_VOLUME.tick : SOUND_VOLUME.default;
 
   oscillator.connect(gainNode);
   gainNode.connect(audioContext.destination);
