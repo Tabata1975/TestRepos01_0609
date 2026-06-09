@@ -1,7 +1,11 @@
 import json
+import sys
+from pathlib import Path
 
-import app as pomodoro_app
 import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import app as pomodoro_app  # noqa: E402
 
 
 @pytest.fixture
