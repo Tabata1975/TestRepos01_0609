@@ -64,7 +64,7 @@ def today_progress():
     today = date.today().isoformat()
     with get_db() as conn:
         row = conn.execute(
-            "SELECT COUNT(*) AS cnt, SUM(duration) AS total FROM sessions WHERE date = ?",
+            "SELECT SUM(completed) AS cnt, SUM(duration) AS total FROM sessions WHERE date = ?",
             (today,),
         ).fetchone()
 
