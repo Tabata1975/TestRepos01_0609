@@ -126,13 +126,15 @@ function recordSession(durationMin) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ duration: durationMin }),
   })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) throw new Error(`POST /api/session failed: ${res.status}`);
+      return res.json();
+    })
     .then((data) => {
       completedCount.textContent = data.completed;
       totalTimeEl.textContent    = formatMinutes(data.total_minutes);
     })
-    .catch(() => {});
-}
+    .catch((err) => console.error(err));
 
 // ===== 今日の進捗取得 (Phase 6) =====
 function loadTodayProgress() {
