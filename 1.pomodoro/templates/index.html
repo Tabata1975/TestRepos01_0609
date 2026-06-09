@@ -7,6 +7,21 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
+  <div class="focus-background" aria-hidden="true">
+    <div class="particle-layer">
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+      <span class="particle"></span>
+    </div>
+    <div class="ripple-layer">
+      <span class="ripple"></span>
+      <span class="ripple"></span>
+      <span class="ripple"></span>
+    </div>
+  </div>
   <div class="window-wrapper">
     <!-- タイトルバー -->
     <div class="title-bar">
@@ -26,6 +41,12 @@
       <!-- 円形プログレスバー -->
       <div class="timer-ring-wrapper">
         <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop id="ring-gradient-start" offset="0%" stop-color="#2f80ed"></stop>
+              <stop id="ring-gradient-end" offset="100%" stop-color="#56ccf2"></stop>
+            </linearGradient>
+          </defs>
           <circle class="ring-bg" cx="60" cy="60" r="52" />
           <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52" />
         </svg>
