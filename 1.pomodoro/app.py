@@ -49,7 +49,7 @@ def add_session():
         conn.commit()
 
         row = conn.execute(
-            "SELECT COUNT(*) AS cnt, SUM(duration) AS total FROM sessions WHERE date = ?",
+            "SELECT SUM(completed) AS cnt, SUM(duration) AS total FROM sessions WHERE date = ?",
             (today,),
         ).fetchone()
 
