@@ -180,10 +180,6 @@ body.focus-mode .focus-background {
   transition: stroke-dashoffset 1s linear;
 }
 
-.ring-progress.break {
-  stroke: #5bbf8a;
-}
-
 .timer-display {
   font-size: 38px;
   font-weight: 700;

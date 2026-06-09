@@ -30,6 +30,16 @@ const ringGradientEnd = document.getElementById("ring-gradient-end");
 const completedCount = document.getElementById("completed-count");
 const totalTimeEl = document.getElementById("total-time");
 
+const FOCUS_COLOR_BLUE = { r: 47, g: 128, b: 237 };
+const FOCUS_COLOR_BLUE_LIGHT = { r: 86, g: 204, b: 242 };
+const FOCUS_COLOR_YELLOW = { r: 242, g: 201, b: 76 };
+const FOCUS_COLOR_ORANGE = { r: 242, g: 153, b: 74 };
+const FOCUS_COLOR_RED = { r: 235, g: 87, b: 87 };
+// 進行率 0.0-0.5 を 青→黄、0.5-1.0 を 黄→赤 に分割する
+const GRADIENT_TRANSITION_MIDPOINT = 0.5;
+// 半分のレンジ（0.5）を 0-1 に拡大するための係数（1 / 0.5 = 2）
+const GRADIENT_TRANSITION_MULTIPLIER = 2;
+
 // ===== 色補間 =====
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -49,22 +59,18 @@ function toRgb(color) {
 }
 
 function getFocusGradientColors(elapsedRatio) {
-  const blue = { r: 47, g: 128, b: 237 };
-  const yellow = { r: 242, g: 201, b: 76 };
-  const red = { r: 235, g: 87, b: 87 };
-
-  if (elapsedRatio <= 0.5) {
-    const t = elapsedRatio * 2;
+  if (elapsedRatio <= GRADIENT_TRANSITION_MIDPOINT) {
+    const t = elapsedRatio * GRADIENT_TRANSITION_MULTIPLIER;
     return {
-      start: interpolateColor(blue, yellow, t),
-      end: interpolateColor({ r: 86, g: 204, b: 242 }, yellow, t),
+      start: interpolateColor(FOCUS_COLOR_BLUE, FOCUS_COLOR_YELLOW, t),
+      end: interpolateColor(FOCUS_COLOR_BLUE_LIGHT, FOCUS_COLOR_YELLOW, t),
     };
   }
 
-  const t = (elapsedRatio - 0.5) * 2;
+  const t = (elapsedRatio - GRADIENT_TRANSITION_MIDPOINT) * GRADIENT_TRANSITION_MULTIPLIER;
   return {
-    start: interpolateColor(yellow, red, t),
-    end: interpolateColor({ r: 242, g: 153, b: 74 }, red, t),
+    start: interpolateColor(FOCUS_COLOR_YELLOW, FOCUS_COLOR_RED, t),
+    end: interpolateColor(FOCUS_COLOR_ORANGE, FOCUS_COLOR_RED, t),
   };
 }
 
