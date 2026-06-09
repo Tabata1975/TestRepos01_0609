@@ -38,6 +38,42 @@
         <button class="btn btn-outline" onclick="resetTimer()">リセット</button>
       </div>
 
+      <div class="settings-panel">
+        <div class="setting-row">
+          <label for="work-duration">作業時間</label>
+          <select id="work-duration">
+            <option value="15">15分</option>
+            <option value="25" selected>25分</option>
+            <option value="35">35分</option>
+            <option value="45">45分</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="break-duration">休憩時間</label>
+          <select id="break-duration">
+            <option value="5" selected>5分</option>
+            <option value="10">10分</option>
+            <option value="15">15分</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label for="theme-select">テーマ</label>
+          <select id="theme-select">
+            <option value="light" selected>ライト</option>
+            <option value="dark">ダーク</option>
+            <option value="focus">フォーカス</option>
+          </select>
+        </div>
+        <div class="setting-row sound-row">
+          <span>サウンド</span>
+          <div class="sound-options">
+            <label><input id="sound-start" type="checkbox" checked />開始</label>
+            <label><input id="sound-end" type="checkbox" checked />終了</label>
+            <label><input id="sound-tick" type="checkbox" />tick</label>
+          </div>
+        </div>
+      </div>
+
       <!-- 今日の進捗パネル -->
       <div class="progress-panel">
         <p class="panel-title">今日の進捗</p>

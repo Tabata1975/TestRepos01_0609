@@ -14,6 +14,60 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+body.theme-dark {
+  background: linear-gradient(135deg, #181a20 0%, #2a3042 100%);
+}
+
+body.theme-dark .title-bar {
+  background: #2a3042;
+  border-bottom-color: #3a4258;
+}
+
+body.theme-dark .title-text,
+body.theme-dark .win-btn,
+body.theme-dark .phase-label,
+body.theme-dark .timer-display,
+body.theme-dark .stat-value,
+body.theme-dark .panel-title {
+  color: #f1f3f8;
+}
+
+body.theme-dark .card,
+body.theme-dark .settings-panel,
+body.theme-dark .progress-panel {
+  background: #202633;
+}
+
+body.theme-dark .ring-bg {
+  stroke: #3d465b;
+}
+
+body.theme-dark .btn-outline {
+  color: #cfd6e6;
+  border-color: #56617b;
+}
+
+body.theme-dark .stat-label {
+  color: #b6bfd5;
+}
+
+body.theme-focus {
+  background: #f2f4f8;
+}
+
+body.theme-focus .window-wrapper {
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.14);
+}
+
+body.theme-focus .title-bar,
+body.theme-focus .progress-panel {
+  display: none;
+}
+
+body.theme-focus .card {
+  gap: 16px;
+}
+
 /* ===== ウィンドウ風ラッパー ===== */
 .window-wrapper {
   width: 340px;
@@ -154,6 +208,57 @@ body {
 
 .btn-outline:hover {
   border-color: #999;
+}
+
+.settings-panel {
+  width: 100%;
+  background: #f7f7f9;
+  border-radius: 12px;
+  padding: 12px 14px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row label,
+.setting-row span {
+  font-size: 12px;
+  color: #666;
+}
+
+.setting-row select {
+  border: 1px solid #d4d8e2;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.sound-row {
+  align-items: flex-start;
+}
+
+.sound-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.sound-options label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* ===== 進捗パネル ===== */

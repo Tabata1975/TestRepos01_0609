@@ -38,7 +38,7 @@ def test_add_session_uses_default_duration_and_returns_aggregate(client):
     assert response.get_json() == {"completed": 1, "total_minutes": 25}
 
 
-@pytest.mark.parametrize("duration", [15, 25, 30])
+@pytest.mark.parametrize("duration", [15, 25, 35, 45])
 def test_add_session_accumulates_total_minutes(client, duration):
     client.post(
         "/api/session",
@@ -57,19 +57,19 @@ def test_add_session_accumulates_total_minutes(client, duration):
 def test_multiple_sessions_are_counted_correctly(client):
     client.post(
         "/api/session",
-        data=json.dumps({"duration": 20}),
+        data=json.dumps({"duration": 15}),
         content_type="application/json",
     )
     client.post(
         "/api/session",
-        data=json.dumps({"duration": 30}),
+        data=json.dumps({"duration": 45}),
         content_type="application/json",
     )
 
     progress = client.get("/api/today")
 
     assert progress.status_code == 200
-    assert progress.get_json() == {"completed": 2, "total_minutes": 50}
+    assert progress.get_json() == {"completed": 2, "total_minutes": 60}
 
 
 def test_gamification_is_zero_initially(client):
