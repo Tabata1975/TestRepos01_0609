@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポモドーロタイマー</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <div class="window-wrapper">
+    <!-- タイトルバー -->
+    <div class="title-bar">
+      <span class="title-text">ポモドーロタイマー</span>
+      <div class="window-controls">
+        <span class="win-btn">&#8722;</span>
+        <span class="win-btn">&#9633;</span>
+        <span class="win-btn">&#10005;</span>
+      </div>
+    </div>
+
+    <!-- メインカード -->
+    <div class="card">
+      <!-- フェーズラベル -->
+      <p id="phase-label" class="phase-label">作業中</p>
+
+      <!-- 円形プログレスバー -->
+      <div class="timer-ring-wrapper">
+        <svg class="timer-ring" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+          <circle class="ring-bg" cx="60" cy="60" r="52" />
+          <circle id="ring-progress" class="ring-progress" cx="60" cy="60" r="52" />
+        </svg>
+        <span id="timer-display" class="timer-display">25:00</span>
+      </div>
+
+      <!-- ボタン -->
+      <div class="btn-group">
+        <button id="start-btn" class="btn btn-primary" onclick="toggleTimer()">開始</button>
+        <button class="btn btn-outline" onclick="resetTimer()">リセット</button>
+      </div>
+
+      <!-- 今日の進捗パネル -->
+      <div class="progress-panel">
+        <p class="panel-title">今日の進捗</p>
+        <div class="panel-stats">
+          <div class="stat">
+            <span id="completed-count" class="stat-value">0</span>
+            <span class="stat-label">完了</span>
+          </div>
+          <div class="stat accent">
+            <span id="total-time" class="stat-value">0分</span>
+            <span class="stat-label">集中時間</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/timer.js') }}"></script>
+</body>
+</html>
