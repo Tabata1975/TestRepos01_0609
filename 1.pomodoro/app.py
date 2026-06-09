@@ -89,6 +89,7 @@ def calculate_streak_days(conn):
     has_today = current_day.isoformat() in active_dates
     has_yesterday = yesterday.isoformat() in active_dates
 
+    # 今日未完了でも昨日まで連続していればストリーク継続として表示する
     if not has_today and has_yesterday:
         current_day = yesterday
     elif not has_today:

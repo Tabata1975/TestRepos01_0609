@@ -258,6 +258,10 @@ body {
   align-items: end;
 }
 
+.monthly-graph {
+  grid-template-columns: repeat(30, minmax(0, 1fr));
+}
+
 .graph-bar {
   height: 8px;
   min-height: 8px;
