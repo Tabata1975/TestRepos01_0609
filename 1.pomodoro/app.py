@@ -86,9 +86,13 @@ def calculate_streak_days(conn):
     today = date.today()
     current_day = today
     yesterday = today - timedelta(days=1)
+    has_today = current_day.isoformat() in active_dates
+    has_yesterday = yesterday.isoformat() in active_dates
 
-    if current_day.isoformat() not in active_dates and yesterday.isoformat() in active_dates:
+    if not has_today and has_yesterday:
         current_day = yesterday
+    elif not has_today:
+        return 0
 
     streak = 0
     while current_day.isoformat() in active_dates:
@@ -128,7 +132,7 @@ def build_gamification_data(conn):
     total_xp = total_completed * XP_PER_COMPLETION
     level = total_xp // XP_PER_LEVEL + 1
     xp_in_level = total_xp % XP_PER_LEVEL
-    xp_for_next_level = XP_PER_LEVEL - xp_in_level if xp_in_level else XP_PER_LEVEL
+    xp_for_next_level = XP_PER_LEVEL - xp_in_level
 
     today = date.today()
     daily_totals = get_daily_totals(conn, today - timedelta(days=29))

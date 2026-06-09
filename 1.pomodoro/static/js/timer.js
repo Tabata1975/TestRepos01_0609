@@ -177,7 +177,7 @@ function loadGamification(checkLevelUp = false) {
       renderStats(data.weekly_stats, weeklyCompletionRateEl, weeklyAvgFocusEl);
       renderStats(data.monthly_stats, monthlyCompletionRateEl, monthlyAvgFocusEl);
       renderGraph(data.weekly_stats.graph.slice(-7), weeklyGraphEl);
-      renderGraph(data.monthly_stats.graph.slice(-7), monthlyGraphEl);
+      renderGraph(data.monthly_stats.graph, monthlyGraphEl);
     })
     .catch((err) => console.error(err));
 }
@@ -186,7 +186,7 @@ function updateXp(xp, checkLevelUp) {
   xpLevelEl.textContent = xp.level;
   xpTotalEl.textContent = xp.total;
   xpProgressLabelEl.textContent = `次のレベルまで ${xp.xp_for_next_level}XP`;
-  const progress = ((xp.per_level ? xp.xp_in_level : 0) / xp.per_level) * 100;
+  const progress = xp.per_level > 0 ? (xp.xp_in_level / xp.per_level) * 100 : 0;
   xpProgressBarEl.style.width = `${Math.max(0, Math.min(100, progress))}%`;
 
   if (checkLevelUp && xp.level > previousLevel) {
